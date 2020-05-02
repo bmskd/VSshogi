@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/firebase-server-sdk-3.0.3.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/google-api-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/google-api-client-gson-1.22.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/google-http-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/google-http-client-gson-1.21.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/google-oauth-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/gson-2.6.2.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/guava-jdk5-17.0.jar"/>
+	<classpathentry kind="lib" path="/Users/msk/eclipse-workspace/jar/json-20160212.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
