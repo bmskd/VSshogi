@@ -16,91 +16,104 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 public class MyClient extends JFrame implements MouseListener,MouseMotionListener {
-	private JButton buttonArray[];//�{�^���p�̔z��
+	private JButton buttonArray[];//ボタン用の配列
 	private Container c;
 	private ImageIcon blackIcon, whiteIcon, boardIcon;
-	PrintWriter out;//�o�͗p�̃��C�^�[
+	PrintWriter out;//出力用のライター
 
 	public MyClient() {
-		//���O�̓��̓_�C�A���O���J��
-		String myName = JOptionPane.showInputDialog(null,"���O����͂��Ă�������","���O�̓���",JOptionPane.QUESTION_MESSAGE);
+		//名前の入力ダイアログを開く
+		String myName = JOptionPane.showInputDialog(null,"名前を入力してください","名前の入力",JOptionPane.QUESTION_MESSAGE);
 		if(myName.equals("")){
-			myName = "No name";//���O���Ȃ��Ƃ��́C"No name"�Ƃ���
+			myName = "No name";//名前がないときは，"No name"とする
 		}
+		String num= JOptionPane10.showInputDialog(null,"characterを選択してください","名前の入力",JOptionPane.QUESTION_MESSAGE);
+		String selectvalues[]= {"織田信長","明智さん","松本人志"};
+		//int number = JOptionPane.showInputDialog(null,"character選択をしてください","character",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE,null,selectvalues,selectvalues[0]);
+		//ウィンドウを作成する
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//ウィンドウを閉じるときに，正しく閉じるように設定する
+		setTitle("MyClient");//ウィンドウのタイトルを設定する
+		setSize(400,300);//ウィンドウのサイズを設定する
+		c = getContentPane();//フレームのペインを取得する
 
-		//�E�B���h�E���쐬����
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//�E�B���h�E�����Ƃ��ɁC����������悤�ɐݒ肷��
-		setTitle("MyClient");//�E�B���h�E�̃^�C�g����ݒ肷��
-		setSize(400,300);//�E�B���h�E�̃T�C�Y��ݒ肷��
-		c = getContentPane();//�t���[���̃y�C�����擾����
-
-		//�A�C�R���̐ݒ�
+		//アイコンの設定
 		whiteIcon = new ImageIcon("White.jpg");
+		JLabel label1 = new JLabel("A",whiteIcon,JLabel.LEFT);
+		label1.setOpaque(true);
 		blackIcon = new ImageIcon("Black.jpg");
+
 		boardIcon = new ImageIcon("GreenFrame.jpg");
 
-		c.setLayout(null);//�������C�A�E�g�̐ݒ���s��Ȃ�
-		//�{�^���̐���
-		buttonArray = new JButton[5];//�{�^���̔z����T�쐬����[0]����[4]�܂Ŏg����
-		for(int i=0;i<5;i++){
-			buttonArray[i] = new JButton(boardIcon);//�{�^���ɃA�C�R����ݒ肷��
-			c.add(buttonArray[i]);//�y�C���ɓ\��t����
-			buttonArray[i].setBounds(i*45,10,45,45);//�{�^���̑傫���ƈʒu��ݒ肷��D(x���W�Cy���W,x�̕�,y�̕��j
-			buttonArray[i].addMouseListener(this);//�{�^�����}�E�X�ł�������Ƃ��ɔ�������悤�ɂ���
-			buttonArray[i].addMouseMotionListener(this);//�{�^�����}�E�X�œ��������Ƃ����Ƃ��ɔ�������悤�ɂ���
-			buttonArray[i].setActionCommand(Integer.toString(i));//�{�^���ɔz��̏���t������i�l�b�g���[�N����ăI�u�W�F�N�g�����ʂ��邽�߁j
+		c.setLayout(null);//自動レイアウトの設定を行わない
+		//ボタンの生成
+		buttonArray = new JButton[10];//ボタンの配列を５個作成する[0]から[4]まで使える
+		for(int i=0;i<10;i++){
+			buttonArray[i] = new JButton(boardIcon);//ボタンにアイコンを設定する
+			c.add(buttonArray[i]);//ペインに貼り付ける
+			buttonArray[i].setBounds(i*45,10,45,45);//ボタンの大きさと位置を設定する．(x座標，y座標,xの幅,yの幅）
+			buttonArray[i].addMouseListener(this);//ボタンをマウスでさわったときに反応するようにする
+			buttonArray[i].addMouseMotionListener(this);//ボタンをマウスで動かそうとしたときに反応するようにする
+			buttonArray[i].setActionCommand(Integer.toString(i));//ボタンに配列の情報を付加する（ネットワークを介してオブジェクトを識別するため）
 		}
 
-		//�T�[�o�ɐڑ�����
+		//サーバに接続する
 		Socket socket = null;
 		try {
-			//"localhost"�́C���������ւ̐ڑ��Dlocalhost��ڑ����IP Address�i"133.42.155.201"�`���j�ɐݒ肷��Ƒ���PC�̃T�[�o�ƒʐM�ł���
-			//10000�̓|�[�g�ԍ��DIP Address�Őڑ�����PC�����߂āC�|�[�g�ԍ��ł���PC�㓮�삷��v���O��������肷��
+			//"localhost"は，自分内部への接続．localhostを接続先のIP Address（"133.42.155.201"形式）に設定すると他のPCのサーバと通信できる
+			//10000はポート番号．IP Addressで接続するPCを決めて，ポート番号でそのPC上動作するプログラムを特定する
 			socket = new Socket("localhost", 10000);
 		} catch (UnknownHostException e) {
-			System.err.println("�z�X�g�� IP �A�h���X������ł��܂���: " + e);
+			System.err.println("ホストの IP アドレスが判定できません: " + e);
 		} catch (IOException e) {
-			 System.err.println("�G���[���������܂���: " + e);
+			 System.err.println("エラーが発生しました: " + e);
 		}
 
-		MesgRecvThread mrt = new MesgRecvThread(socket, myName);//��M�p�̃X���b�h���쐬����
-		mrt.start();//�X���b�h�𓮂����iRun�������j
+		MesgRecvThread mrt = new MesgRecvThread(socket, myName, num);//受信用のスレッドを作成する
+		mrt.start();//スレッドを動かす（Runが動く）
 	}
 
-	//���b�Z�[�W��M�̂��߂̃X���b�h
+	//メッセージ受信のためのスレッド
 	public class MesgRecvThread extends Thread {
 
 		Socket socket;
 		String myName;
+		int[] character= new int[5];
 
-		public MesgRecvThread(Socket s, String n){
+		public MesgRecvThread(Socket s, String n,String num){
 			socket = s;
 			myName = n;
+//			character[0]=num[0];
+//			character[1]=num[1];
+//			character[2]=num[2];
+//			character[3]=num[3];
+//			character[4]=num[4];
+
 		}
 
-		//�ʐM�󋵂��Ď����C��M�f�[�^�ɂ���ē��삷��
+		//通信状況を監視し，受信データによって動作する
 		public void run() {
 			try{
 				InputStreamReader sisr = new InputStreamReader(socket.getInputStream());
 				BufferedReader br = new BufferedReader(sisr);
 				out = new PrintWriter(socket.getOutputStream(), true);
-				out.println(myName);//�ڑ��̍ŏ��ɖ��O�𑗂�
+				out.println(myName);//接続の最初に名前を送る
 				while(true) {
-					String inputLine = br.readLine();//�f�[�^����s�������ǂݍ���ł݂�
-					if (inputLine != null) {//�ǂݍ��񂾂Ƃ��Ƀf�[�^���ǂݍ��܂ꂽ���ǂ������`�F�b�N����
-						System.out.println(inputLine);//�f�o�b�O�i����m�F�p�j�ɃR���\�[���ɏo�͂���
-						String[] inputTokens = inputLine.split(" ");	//���̓f�[�^����͂��邽�߂ɁA�X�y�[�X�Ő؂蕪����
-						String cmd = inputTokens[0];//�R�}���h�̎��o���D�P�ڂ̗v�f�����o��
-						if(cmd.equals("MOVE")){//cmd�̕�����"MOVE"�����������ׂ�D��������true�ƂȂ�
-							//MOVE�̎��̏���(�R�}�̈ړ��̏���)
-							String theBName = inputTokens[1];//�{�^���̖��O�i�ԍ��j�̎擾
-							int theBnum = Integer.parseInt(theBName);//�{�^���̖��O�𐔒l�ɕϊ�����
-							int x = Integer.parseInt(inputTokens[2]);//���l�ɕϊ�����
-							int y = Integer.parseInt(inputTokens[3]);//���l�ɕϊ�����
-							buttonArray[theBnum].setLocation(x,y);//�w��̃{�^�����ʒu��x,y�ɐݒ肷��
+					String inputLine = br.readLine();//データを一行分だけ読み込んでみる
+					if (inputLine != null) {//読み込んだときにデータが読み込まれたかどうかをチェックする
+						System.out.println(inputLine);//デバッグ（動作確認用）にコンソールに出力する
+						String[] inputTokens = inputLine.split(" ");	//入力データを解析するために、スペースで切り分ける
+						String cmd = inputTokens[0];//コマンドの取り出し．１つ目の要素を取り出す
+						if(cmd.equals("MOVE")){//cmdの文字と"MOVE"が同じか調べる．同じ時にtrueとなる
+							//MOVEの時の処理(コマの移動の処理)
+							String theBName = inputTokens[1];//ボタンの名前（番号）の取得
+							int theBnum = Integer.parseInt(theBName);//ボタンの名前を数値に変換する
+							int x = Integer.parseInt(inputTokens[2]);//数値に変換する
+							int y = Integer.parseInt(inputTokens[3]);//数値に変換する
+							buttonArray[theBnum].setLocation(x,y);//指定のボタンを位置をx,yに設定する
 						}
 					}else{
 						break;
@@ -109,74 +122,75 @@ public class MyClient extends JFrame implements MouseListener,MouseMotionListene
 				}
 				socket.close();
 			} catch (IOException e) {
-				System.err.println("�G���[���������܂���: " + e);
+				System.err.println("エラーが発生しました: " + e);
 			}
 		}
 	}
+
 
 	public static void main(String[] args) {
 		MyClient net = new MyClient();
 		net.setVisible(true);
 	}
 
-	public void mouseClicked(MouseEvent e) {//�{�^�����N���b�N�����Ƃ��̏���
-		System.out.println("�N���b�N");
-		JButton theButton = (JButton)e.getComponent();//�N���b�N�����I�u�W�F�N�g�𓾂�D�^���Ⴄ�̂ŃL���X�g����
-		String theArrayIndex = theButton.getActionCommand();//�{�^���̔z��̔ԍ������o��
+	public void mouseClicked(MouseEvent e) {//ボタンをクリックしたときの処理
+		System.out.println("クリック");
+		JButton theButton = (JButton)e.getComponent();//クリックしたオブジェクトを得る．型が違うのでキャストする
+		String theArrayIndex = theButton.getActionCommand();//ボタンの配列の番号を取り出す
 
-		Icon theIcon = theButton.getIcon();//theIcon�ɂ́C���݂̃{�^���ɐݒ肳�ꂽ�A�C�R��������
-		System.out.println(theIcon);//�f�o�b�O�i�m�F�p�j�ɁC�N���b�N�����A�C�R���̖��O���o�͂���
 
-		if(theIcon == whiteIcon){//�A�C�R����whiteIcon�Ɠ����Ȃ�
-			theButton.setIcon(blackIcon);//blackIcon�ɐݒ肷��
+		Icon theIcon = theButton.getIcon();//theIconには，現在のボタンに設定されたアイコンが入る
+		System.out.println(theIcon);//デバッグ（確認用）に，クリックしたアイコンの名前を出力する
+
+		if(theIcon == whiteIcon){//アイコンがwhiteIconと同じなら
+			theButton.setIcon(blackIcon);//blackIconに設定する
 		}else{
-			theButton.setIcon(whiteIcon);//whiteIcon�ɐݒ肷��
+			theButton.setIcon(whiteIcon);//whiteIconに設定する
 		}
-		repaint();//��ʂ̃I�u�W�F�N�g��`�悵����
+		repaint();//画面のオブジェクトを描画し直す
 	}
 
-	public void mouseEntered(MouseEvent e) {//�}�E�X���I�u�W�F�N�g�ɓ������Ƃ��̏���
-		System.out.println("�}�E�X��������");
+	public void mouseEntered(MouseEvent e) {//マウスがオブジェクトに入ったときの処理
+		System.out.println("マウスが入った");
 	}
 
-	public void mouseExited(MouseEvent e) {//�}�E�X���I�u�W�F�N�g����o���Ƃ��̏���
-		System.out.println("�}�E�X�E�o");
+	public void mouseExited(MouseEvent e) {//マウスがオブジェクトから出たときの処理
+		System.out.println("マウス脱出");
 	}
 
-	public void mousePressed(MouseEvent e) {//�}�E�X�ŃI�u�W�F�N�g���������Ƃ��̏����i�N���b�N�Ƃ̈Ⴂ�ɒ��Ӂj
-		System.out.println("�}�E�X��������");
+	public void mousePressed(MouseEvent e) {//マウスでオブジェクトを押したときの処理（クリックとの違いに注意）
+		System.out.println("マウスを押した");
 	}
 
-	public void mouseReleased(MouseEvent e) {//�}�E�X�ŉ����Ă����I�u�W�F�N�g�𗣂����Ƃ��̏���
-		System.out.println("�}�E�X�������");
+	public void mouseReleased(MouseEvent e) {//マウスで押していたオブジェクトを離したときの処理
+		System.out.println("マウスを放した");
 	}
 
-	public void mouseDragged(MouseEvent e) {//�}�E�X�ŃI�u�W�F�N�g�Ƃ��h���b�O���Ă���Ƃ��̏���
-		System.out.println("�}�E�X���h���b�O");
-		JButton theButton = (JButton)e.getComponent();//�^���Ⴄ�̂ŃL���X�g����
-		String theArrayIndex = theButton.getActionCommand();//�{�^���̔z��̔ԍ������o��
+	public void mouseDragged(MouseEvent e) {//マウスでオブジェクトとをドラッグしているときの処理
+		System.out.println("マウスをドラッグ");
+		JButton theButton = (JButton)e.getComponent();//型が違うのでキャストする
+		String theArrayIndex = theButton.getActionCommand();//ボタンの配列の番号を取り出す
 
-		Point theMLoc = e.getPoint();//�������R���|�[�l���g����Ƃ��鑊�΍��W
-		System.out.println(theMLoc);//�f�o�b�O�i�m�F�p�j�ɁC�擾�����}�E�X�̈ʒu���R���\�[���ɏo�͂���
-		Point theBtnLocation = theButton.getLocation();//�N���b�N�����{�^�������W���擾����
-		theBtnLocation.x += theMLoc.x-15;//�{�^���̐^�񒆓�����Ƀ}�E�X�J�[�\��������悤�ɕ␳����
-		theBtnLocation.y += theMLoc.y-15;//�{�^���̐^�񒆓�����Ƀ}�E�X�J�[�\��������悤�ɕ␳����
-		theButton.setLocation(theBtnLocation);//�}�E�X�̈ʒu�ɂ��킹�ăI�u�W�F�N�g���ړ�����
+		Point theMLoc = e.getPoint();//発生元コンポーネントを基準とする相対座標
+		System.out.println(theMLoc);//デバッグ（確認用）に，取得したマウスの位置をコンソールに出力する
+		Point theBtnLocation = theButton.getLocation();//クリックしたボタンを座標を取得する
+		theBtnLocation.x += theMLoc.x-15;//ボタンの真ん中当たりにマウスカーソルがくるように補正する
+		theBtnLocation.y += theMLoc.y-15;//ボタンの真ん中当たりにマウスカーソルがくるように補正する
 
-		//���M�����쐬����i��M���ɂ́C���̑��������ԂɃf�[�^�����o���D�X�y�[�X���f�[�^�̋�؂�ƂȂ�j
+		//送信情報を作成する（受信時には，この送った順番にデータを取り出す．スペースがデータの区切りとなる）
 		String msg = "MOVE"+" "+theArrayIndex+" "+theBtnLocation.x+" "+theBtnLocation.y;
 
-		//�T�[�o�ɏ��𑗂�
-		out.println(msg);//���M�f�[�^���o�b�t�@�ɏ����o��
-		out.flush();//���M�f�[�^���t���b�V���i�l�b�g���[�N��ɂ͂��o���j����
+		//サーバに情報を送る
+		out.println(msg);//送信データをバッファに書き出す
+		out.flush();//送信データをフラッシュ（ネットワーク上にはき出す）する
 
-		repaint();//�I�u�W�F�N�g�̍ĕ`����s��
+		repaint();//オブジェクトの再描画を行う
 	}
 
-	public void mouseMoved(MouseEvent e) {//�}�E�X���I�u�W�F�N�g��ňړ������Ƃ��̏���
-		System.out.println("�}�E�X�ړ�");
-		int theMLocX = e.getX();//�}�E�X��x���W�𓾂�
-		int theMLocY = e.getY();//�}�E�X��y���W�𓾂�
-		System.out.println(theMLocX+","+theMLocY);//�R���\�[���ɏo�͂���
+	public void mouseMoved(MouseEvent e) {//マウスがオブジェクト上で移動したときの処理
+		System.out.println("マウス移動");
+		int theMLocX = e.getX();//マウスのx座標を得る
+		int theMLocY = e.getY();//マウスのy座標を得る
+		System.out.println(theMLocX+","+theMLocY);//コンソールに出力する
 	}
 }
